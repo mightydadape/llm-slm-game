@@ -309,6 +309,8 @@
 
             const q = gameData[currentQuestion];
             const correct = q.showing;
+            const other = correct === 'llm' ? 'slm' : 'llm';
+            const otherResponse = q[other];
 
             const { data: votes } = await db
                 .from('votes')
@@ -318,7 +320,17 @@
             const correctCount = votes ? votes.filter(v => v.vote === correct).length : 0;
             const incorrectCount = votes ? votes.length - correctCount : 0;
 
-            document.getElementById('answerText').textContent = `✨ This was ${correct.toUpperCase()}! ✨`;
+            document.getElementById('answerText').innerHTML = `
+                ✨ This was <strong>${correct.toUpperCase()}</strong>! ✨
+                <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 8px; text-align: left;">
+                    <div style="font-size: 0.9em; color: #667eea; font-weight: bold; margin-bottom: 10px;">
+                        The ${other.toUpperCase()} response was:
+                    </div>
+                    <div style="font-size: 0.9em; color: #333; line-height: 1.6; white-space: pre-wrap;">
+                        ${otherResponse}
+                    </div>
+                </div>
+            `;
             document.getElementById('scoreSummary').textContent = `${correctCount} correct, ${incorrectCount} incorrect`;
             document.getElementById('answerReveal').classList.add('show');
 
