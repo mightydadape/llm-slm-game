@@ -1,0 +1,11 @@
+// Supabase Configuration Template
+// Copy this file to config.js and replace with your actual credentials
+
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+// Don't edit below this line
+if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+    console.error('⚠️ Please update config.js with your Supabase credentials!');
+    console.error('See supabase-setup.md for instructions');
+}

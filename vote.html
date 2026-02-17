@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote - LLM vs SLM Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .name-input {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .vote-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .vote-btn {
+            padding: 40px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: 3px solid;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .vote-btn.llm {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .vote-btn.slm {
+            border-color: #764ba2;
+            color: #764ba2;
+        }
+
+        .vote-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .vote-btn.llm:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .vote-btn.slm:hover {
+            background: #764ba2;
+            color: white;
+        }
+
+        .vote-btn.selected {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+
+        .vote-btn.llm.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .vote-btn.slm.selected {
+            background: #764ba2;
+            color: white;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .instruction {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .vote-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🗳️ Cast Your Vote</h1>
+
+            <div class="name-input">
+                <label for="voterName">Your Name:</label>
+                <input type="text" id="voterName" placeholder="Enter your name" autocomplete="name">
+            </div>
+
+            <div class="vote-buttons">
+                <button class="vote-btn llm" onclick="vote('llm')">
+                    🤖<br>LLM
+                </button>
+                <button class="vote-btn slm" onclick="vote('slm')">
+                    🧠<br>SLM
+                </button>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="instruction">
+                Your vote will appear on the main screen in real-time
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let currentVote = null;
+        let voterName = localStorage.getItem('voterName') || '';
+
+        // Pre-fill name if stored
+        if (voterName) {
+            document.getElementById('voterName').value = voterName;
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const hostname = window.location.hostname;
+            const port = window.location.port;
+
+            ws = new WebSocket(`${protocol}//${hostname}:${port}/ws`);
+
+            ws.onopen = () => {
+                console.log('Connected to game');
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        connectWebSocket();
+
+        function vote(choice) {
+            const nameInput = document.getElementById('voterName');
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                showStatus('Please enter your name first!', 'error');
+                nameInput.focus();
+                return;
+            }
+
+            // Save name for future use
+            localStorage.setItem('voterName', name);
+            voterName = name;
+
+            // Update UI
+            document.querySelectorAll('.vote-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.vote-btn.${choice}`).classList.add('selected');
+
+            currentVote = choice;
+
+            // Send vote via WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'vote',
+                    voter: name,
+                    vote: choice
+                }));
+                showStatus(`Vote cast: ${choice.toUpperCase()}! ✓`, 'success');
+            } else {
+                // Fallback to HTTP if WebSocket not available
+                fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voter: name, vote: choice })
+                })
+                .then(r => r.json())
+                .then(() => {
+                    showStatus(`Vote cast: ${choice.toUpperCase()}! ✓`, 'success');
+                })
+                .catch(err => {
+                    showStatus('Error casting vote. Try again.', 'error');
+                });
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.classList.remove('success');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

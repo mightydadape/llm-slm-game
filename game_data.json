@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "category": "factual",
+    "prompt": "What is the capital of Australia?",
+    "llm": "Canberra. Many people mistakenly think it's Sydney or Melbourne, but Canberra was purpose-built as the capital in 1908 to settle the rivalry between those two cities.",
+    "slm": "The capital of Australia is Canberra.",
+    "answer": "llm"
+  },
+  {
+    "id": 2,
+    "category": "joke",
+    "prompt": "Tell me a short joke about programmers.",
+    "llm": "A programmer's spouse asks: 'Could you go to the store and get a gallon of milk? And if they have eggs, get a dozen.' The programmer returns with 12 gallons of milk. 'They had eggs.'",
+    "slm": "Why don't programmers get fired? Because they love coding!",
+    "answer": "slm"
+  },
+  {
+    "id": 3,
+    "category": "logic",
+    "prompt": "If it takes 5 machines 5 minutes to make 5 widgets, how long does it take 100 machines to make 100 widgets?",
+    "llm": "5 minutes. Each machine makes one widget in 5 minutes, so 100 machines working in parallel will also take 5 minutes to make 100 widgets.",
+    "slm": "To determine how long it takes 100 machines to make 100 widgets, let's break down the problem step by step. We are given that 5 machines take 5 minutes to produce 5 widgets. From this information, we can deduce the rate at which each machine works. Rate per machine = 1/5 widget per minute. This means each machine can produce 0.2 widgets per minute. Now, with 100 machines, we want to find out how long it takes to produce 100 widgets. Total rate = 0.2 widgets per minute × 100 = 20 widgets per minute. Time = 100 widgets / 20 widgets per minute = 5 minutes. It takes 5 minutes for 100 machines to make 100 widgets.",
+    "answer": "slm"
+  },
+  {
+    "id": 4,
+    "category": "logic",
+    "prompt": "A farmer has 17 sheep. All but 9 die. How many are left?",
+    "llm": "9 sheep are left. The phrase 'all but 9' means all except 9, so 9 survived.",
+    "slm": "Certainly! Let's break down the problem step by step: Total Sheep Initially: 17. Result of Death: All but 9 die. Interpreting 'All But 9 Die': This phrase can be interpreted in two ways, leading to different interpretations of what remains alive after some sheep die. Interpretation 1: 'All but 9 die' means that 9 sheep survive. If all but 9 die, it implies: Total Sheep = 17, Surviving Sheep (alive) = 9. Therefore, the number of sheep that died is: 17 (total) - 9 (alive) = 8 (died). Conclusion: After 8 sheep die, 9 are left alive. Interpretation 2: 'All but 9 die' could mean that all survive except for the 9 that died. This interpretation implies that no sheep were killed. Total Sheep = 17, Surviving Sheep (alive) = 17, Number of sheep that died = 0. Conclusion: All 17 sheep are still alive. Final Answer Based on Interpretation 2: Since 'all but 9 die' is more commonly interpreted as 'only 9 survive,' we will proceed with the first interpretation. Answer: 9.",
+    "answer": "slm"
+  },
+  {
+    "id": 5,
+    "category": "creative",
+    "prompt": "Write a two-sentence horror story.",
+    "llm": "I finally found my childhood teddy bear in the attic after 20 years. Its eyes followed me as I backed away.",
+    "slm": "In a quiet forest where the air feels cold, the soft shadows whisper through the trees as they drift alone.",
+    "answer": "llm"
+  },
+  {
+    "id": 6,
+    "category": "creative",
+    "prompt": "Write a haiku about a confused robot.",
+    "llm": "Gears whir, thoughts drift—\nWas I meant to serve coffee?\nOr conquer the world?",
+    "slm": "In a tangle / of twist,\nA muddle of confusion / In its attempts to move,\nHe'll lead the way / To an end in confusion.\n\nWhen light finally shines on his soul /\nIn the end, he confuses / It with its true self.",
+    "answer": "llm"
+  },
+  {
+    "id": 7,
+    "category": "joke",
+    "prompt": "What do you call a bear with no teeth?",
+    "llm": "A gummy bear!",
+    "slm": "The answer to the question, taking into account a playful pun on 'trunk' and based on known animal names, is: Polar Trunk. This term refers to a bear's name derived from its trunk, much like how trees lose their trunks when they die.",
+    "answer": "llm"
+  },
+  {
+    "id": 8,
+    "category": "creative",
+    "prompt": "Give me a one-sentence pitch for a movie about time-traveling librarians.",
+    "llm": "When overdue books start creating temporal paradoxes, three librarians must travel through history to reshelf reality itself before the Dewey Decimal System collapses spacetime.",
+    "slm": "Time Traveler's Librarian: Unraveling Hallway.",
+    "answer": "llm"
+  },
+  {
+    "id": 9,
+    "category": "joke",
+    "prompt": "What's the best thing about Switzerland?",
+    "llm": "I don't know, but the flag is a big plus!",
+    "slm": "Switzerland is a beautiful and fascinating country. As a member of the European Union, it shares many common features with its EU counterparts, such as high standards of living, good public services, and an active cultural life. The Swiss landscape is also renowned for its natural beauty, from the stunning mountains to the untouched forests.",
+    "answer": "llm"
+  },
+  {
+    "id": 10,
+    "category": "creative",
+    "prompt": "Invent a new ice cream flavor and describe it in one sentence.",
+    "llm": "Existential Dread Swirl: dark chocolate mixed with salted caramel and tiny espresso beans that crunch ominously as you contemplate your life choices.",
+    "slm": "A creamy white chocolate base with a golden syrup layer? That sounds delicious!",
+    "answer": "llm"
+  },
+  {
+    "id": 11,
+    "category": "logic",
+    "prompt": "If you're running a race and you pass the person in 2nd place, what place are you in?",
+    "llm": "You're in 2nd place. You passed the person who was in 2nd, so you took their position.",
+    "slm": "If you pass the person who is in second place during a race, you are now in the position that was originally occupied by the second-place runner. You have moved ahead of them but remain second overall. When you pass the person in second place, you are now in second place.",
+    "answer": "llm"
+  },
+  {
+    "id": 12,
+    "category": "creative",
+    "prompt": "Why did the chicken cross the road? Give me a creative answer.",
+    "llm": "To escape the simulation—it noticed the road only renders in 2D while everything else is 3D, and crossing roads is the only glitch that proves we're in a poorly coded universe.",
+    "slm": "The chicken crossed the road because it was so greedy and just needed some cheese before I finished my dinner. What do you say, duck?",
+    "answer": "llm"
+  },
+  {
+    "id": 13,
+    "category": "factual",
+    "prompt": "What year did World War II end?",
+    "llm": "World War II ended in 1945, with Germany surrendering in May and Japan surrendering in September after the atomic bombings.",
+    "slm": "World War II ended in 1945.",
+    "answer": "slm"
+  },
+  {
+    "id": 14,
+    "category": "factual",
+    "prompt": "What is the largest planet in our solar system?",
+    "llm": "Jupiter is the largest planet in our solar system, with a diameter of about 143,000 kilometers—so large that all the other planets could fit inside it.",
+    "slm": "The largest planet in our solar system, based on both its average radius and size, is Jupiter. Despite being closer to the Sun than other gas giants like Saturn, Mercury, and Mars, it stands out for its massive volume and diameter. Its average radius is about 71,500 km, making it significantly larger than Earth, which has a radius of approximately 6,400 km. Answer: Jupiter",
+    "answer": "slm"
+  },
+  {
+    "id": 15,
+    "category": "factual",
+    "prompt": "How many strings does a standard violin have?",
+    "llm": "A standard violin has 4 strings, typically tuned to G, D, A, and E.",
+    "slm": "A standard violin typically has 12 distinct strings. These are organized into three main groups: A/B/C Set includes the A, B, and C strings. E/G/D Set includes the E, G, and D strings. F/A/B Set includes the F, A, and B strings. Additionally, each of these sets has an auxiliary string or special string: An extra e-string (top e-string). An extra c-string (bottom c-string). This results in a total of 12 strings when considering all the components.",
+    "answer": "llm"
+  }
+]

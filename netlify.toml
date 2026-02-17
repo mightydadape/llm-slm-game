@@ -1,0 +1,18 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index-supabase.html"
+  status = 200
+  force = false
+
+[[redirects]]
+  from = "/vote"
+  to = "/vote-supabase.html"
+  status = 200
+
+[[redirects]]
+  from = "/vote.html"
+  to = "/vote-supabase.html"
+  status = 200

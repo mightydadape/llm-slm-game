@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM vs SLM Game - Host View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .prompt-section {
+            margin-bottom: 30px;
+        }
+
+        .prompt-label {
+            font-size: 0.9em;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .prompt-text {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .response-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .response-text {
+            font-size: 1.2em;
+            color: #333;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .voting-section {
+            margin-top: 30px;
+        }
+
+        .votes-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .vote-column {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .vote-column.llm {
+            border-color: #667eea;
+        }
+
+        .vote-column.slm {
+            border-color: #764ba2;
+        }
+
+        .vote-label {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .vote-count {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .vote-column.llm .vote-count {
+            color: #667eea;
+        }
+
+        .vote-column.slm .vote-count {
+            color: #764ba2;
+        }
+
+        .voter-names {
+            font-size: 0.9em;
+            color: #666;
+            min-height: 40px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-reveal {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-next {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+
+        .answer-reveal {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .answer-reveal.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .answer-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .score-summary {
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .progress {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .qr-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .qr-code {
+            margin: 20px auto;
+        }
+
+        .join-url {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .votes-container {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .prompt-text {
+                font-size: 1.3em;
+            }
+
+            .response-text {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 LLM vs SLM Guessing Game 🧠</h1>
+
+        <div class="qr-section" id="qrSection">
+            <h2>Players: Scan to Join!</h2>
+            <div id="qrCode" class="qr-code"></div>
+            <div class="join-url" id="joinUrl">Loading...</div>
+        </div>
+
+        <div class="progress">
+            <span id="progress">Question 1 of 15</span>
+        </div>
+
+        <div class="game-card">
+            <div class="prompt-section">
+                <div class="prompt-label">Prompt</div>
+                <div class="prompt-text" id="promptText">Loading...</div>
+            </div>
+
+            <div class="response-section">
+                <div class="response-text" id="responseText">Loading response...</div>
+            </div>
+
+            <div class="voting-section">
+                <h3 style="text-align: center; margin-bottom: 20px; color: #333;">Live Votes</h3>
+                <div class="votes-container">
+                    <div class="vote-column llm">
+                        <div class="vote-label">🤖 LLM</div>
+                        <div class="vote-count" id="llmVotes">0</div>
+                        <div class="voter-names" id="llmVoters"></div>
+                    </div>
+                    <div class="vote-column slm">
+                        <div class="vote-label">🧠 SLM</div>
+                        <div class="vote-count" id="slmVotes">0</div>
+                        <div class="voter-names" id="slmVoters"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="answer-reveal" id="answerReveal">
+                <div class="answer-text" id="answerText">Correct answer: LLM</div>
+                <div class="score-summary" id="scoreSummary">5 correct, 3 incorrect</div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-prev" onclick="previousQuestion()">⬅️ Previous</button>
+                <button class="btn-reveal" onclick="revealAnswer()">🎯 Reveal Answer</button>
+                <button class="btn-next" onclick="nextQuestion()">Next ➡️</button>
+                <button class="btn-reset" onclick="resetVotes()">🔄 Reset Votes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let gameData = [];
+        let currentQuestion = 0;
+        let revealed = false;
+        let subscription = null;
+
+        // Get voting URL for QR code
+        const voteUrl = window.location.origin + '/vote.html';
+        document.getElementById('joinUrl').textContent = voteUrl;
+        new QRCode(document.getElementById('qrCode'), {
+            text: voteUrl,
+            width: 200,
+            height: 200
+        });
+
+        // Load game data
+        fetch('game_data.json')
+            .then(r => r.json())
+            .then(data => {
+                gameData = data;
+                loadQuestion();
+            });
+
+        async function loadQuestion() {
+            if (currentQuestion >= gameData.length) {
+                currentQuestion = gameData.length - 1;
+                return;
+            }
+
+            const q = gameData[currentQuestion];
+            document.getElementById('promptText').textContent = q.prompt;
+
+            // Randomly show either LLM or SLM response
+            const showLLM = Math.random() < 0.5;
+            const response = showLLM ? q.llm : q.slm;
+            document.getElementById('responseText').textContent = response;
+
+            // Store which one we're showing
+            q.showing = showLLM ? 'llm' : 'slm';
+
+            document.getElementById('progress').textContent = `Question ${currentQuestion + 1} of ${gameData.length}`;
+
+            revealed = false;
+            document.getElementById('answerReveal').classList.remove('show');
+
+            // Subscribe to real-time votes for this question
+            subscribeToVotes();
+
+            // Load existing votes for this question
+            loadVotes();
+        }
+
+        function subscribeToVotes() {
+            // Unsubscribe from previous question if exists
+            if (subscription) {
+                supabase.removeChannel(subscription);
+            }
+
+            // Subscribe to new votes for current question
+            subscription = supabase
+                .channel(`votes-${currentQuestion}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'votes',
+                    filter: `question_id=eq.${currentQuestion}`
+                }, (payload) => {
+                    console.log('Vote change detected:', payload);
+                    loadVotes();
+                })
+                .subscribe();
+        }
+
+        async function loadVotes() {
+            const { data, error } = await supabase
+                .from('votes')
+                .select('voter, vote')
+                .eq('question_id', currentQuestion);
+
+            if (error) {
+                console.error('Error loading votes:', error);
+                return;
+            }
+
+            updateVoteDisplay(data || []);
+        }
+
+        function updateVoteDisplay(votes) {
+            const llmVoters = [];
+            const slmVoters = [];
+
+            votes.forEach(v => {
+                if (v.vote === 'llm') {
+                    llmVoters.push(v.voter);
+                } else if (v.vote === 'slm') {
+                    slmVoters.push(v.voter);
+                }
+            });
+
+            document.getElementById('llmVotes').textContent = llmVoters.length;
+            document.getElementById('slmVotes').textContent = slmVoters.length;
+            document.getElementById('llmVoters').textContent = llmVoters.join(', ');
+            document.getElementById('slmVoters').textContent = slmVoters.join(', ');
+        }
+
+        async function revealAnswer() {
+            if (revealed) return;
+
+            const q = gameData[currentQuestion];
+            const correct = q.showing;
+
+            // Get current votes
+            const { data: votes } = await supabase
+                .from('votes')
+                .select('vote')
+                .eq('question_id', currentQuestion);
+
+            const correctCount = votes ? votes.filter(v => v.vote === correct).length : 0;
+            const incorrectCount = votes ? votes.length - correctCount : 0;
+
+            document.getElementById('answerText').textContent =
+                `✨ This was ${correct.toUpperCase()}! ✨`;
+            document.getElementById('scoreSummary').textContent =
+                `${correctCount} correct, ${incorrectCount} incorrect`;
+            document.getElementById('answerReveal').classList.add('show');
+
+            revealed = true;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < gameData.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        async function resetVotes() {
+            const { error } = await supabase
+                .from('votes')
+                .delete()
+                .eq('question_id', currentQuestion);
+
+            if (error) {
+                console.error('Error resetting votes:', error);
+            } else {
+                console.log('Votes reset for question', currentQuestion);
+            }
+        }
+    </script>
+</body>
+</html>
