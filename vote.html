@@ -149,7 +149,9 @@
             document.getElementById('voterName').value = voterName;
         }
 
-        // Listen for question changes by checking if our vote still exists
+        // Listen for vote resets (when host clicks Next, Previous, or Reset Votes)
+        let lastVoteExists = false;
+
         setInterval(async () => {
             if (!voterName) return;
 
@@ -159,13 +161,17 @@
                 .eq('voter', voterName)
                 .eq('question_id', currentQuestionId);
 
-            // If our vote is gone, the host moved to next question
-            if (!data || data.length === 0) {
+            const voteExists = data && data.length > 0;
+
+            // If we had a vote and now it's gone, votes were reset
+            if (lastVoteExists && !voteExists) {
                 document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
                 const status = document.getElementById('status');
                 status.className = 'status';
             }
-        }, 3000);
+
+            lastVoteExists = voteExists;
+        }, 2000);
 
         async function vote(choice) {
             const nameInput = document.getElementById('voterName');
