@@ -1,19 +1,4 @@
 [build]
   publish = "."
 
-# Specific redirects MUST come before catch-all
-[[redirects]]
-  from = "/vote.html"
-  to = "/vote-supabase.html"
-  status = 200
-
-[[redirects]]
-  from = "/vote"
-  to = "/vote-supabase.html"
-  status = 200
-
-# Catch-all redirect for root - only if not found
-[[redirects]]
-  from = "/"
-  to = "/index-supabase.html"
-  status = 200
+# No redirects needed - index.html and vote.html are now the Supabase versions

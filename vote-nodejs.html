@@ -189,27 +189,41 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
-        // Initialize Supabase
-        const SUPABASE_URL = "https://cysxqrnvlltndldjovam.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5c3hxcm52bGx0bmRsZGpvdmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODAxODIsImV4cCI6MjA4Njg1NjE4Mn0.TyNdxZeArM_sKOOrviLKskWCCSnizaM1_QxI0mBTE6k";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+        let ws;
+        let currentVote = null;
         let voterName = localStorage.getItem('voterName') || '';
-        let currentQuestionId = 0;
 
         // Pre-fill name if stored
         if (voterName) {
             document.getElementById('voterName').value = voterName;
         }
 
-        // Poll for current question by checking what the host is viewing
-        // In a real setup, you might want to sync this via Supabase as well
-        // For now, we'll just use question 0 and let users re-vote when host changes questions
+        // WebSocket connection
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const hostname = window.location.hostname;
+            const port = window.location.port;
 
-        async function vote(choice) {
+            ws = new WebSocket(`${protocol}//${hostname}:${port}/ws`);
+
+            ws.onopen = () => {
+                console.log('Connected to game');
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected, reconnecting...');
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        connectWebSocket();
+
+        function vote(choice) {
             const nameInput = document.getElementById('voterName');
             const name = nameInput.value.trim();
 
@@ -229,29 +243,30 @@
             });
             document.querySelector(`.vote-btn.${choice}`).classList.add('selected');
 
-            // First, delete any existing vote from this voter for this question
-            await supabase
-                .from('votes')
-                .delete()
-                .eq('voter', name)
-                .eq('question_id', currentQuestionId);
+            currentVote = choice;
 
-            // Then insert the new vote
-            const { data, error } = await supabase
-                .from('votes')
-                .insert([
-                    {
-                        voter: name,
-                        vote: choice,
-                        question_id: currentQuestionId
-                    }
-                ]);
-
-            if (error) {
-                console.error('Error voting:', error);
-                showStatus('Error casting vote. Try again.', 'error');
-            } else {
+            // Send vote via WebSocket
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'vote',
+                    voter: name,
+                    vote: choice
+                }));
                 showStatus(`Vote cast: ${choice.toUpperCase()}! ✓`, 'success');
+            } else {
+                // Fallback to HTTP if WebSocket not available
+                fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voter: name, vote: choice })
+                })
+                .then(r => r.json())
+                .then(() => {
+                    showStatus(`Vote cast: ${choice.toUpperCase()}! ✓`, 'success');
+                })
+                .catch(err => {
+                    showStatus('Error casting vote. Try again.', 'error');
+                });
             }
         }
 
@@ -266,20 +281,6 @@
                 }, 3000);
             }
         }
-
-        // Subscribe to question changes (if host moves to next question)
-        // This is a simple implementation - you could make it more sophisticated
-        const channel = supabase
-            .channel('game-state')
-            .on('broadcast', { event: 'question-change' }, (payload) => {
-                currentQuestionId = payload.questionId;
-                // Clear selected state when question changes
-                document.querySelectorAll('.vote-btn').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                showStatus('New question! Cast your vote.', 'success');
-            })
-            .subscribe();
     </script>
 </body>
 </html>

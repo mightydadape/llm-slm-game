@@ -234,6 +234,20 @@
             margin-top: 10px;
         }
 
+        .error-banner {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .votes-container {
                 grid-template-columns: 1fr;
@@ -256,6 +270,10 @@
 <body>
     <div class="container">
         <h1>🤖 LLM vs SLM Guessing Game 🧠</h1>
+
+        <div class="error-banner" id="errorBanner">
+            ⚠️ Please configure your Supabase credentials in config.js
+        </div>
 
         <div class="qr-section" id="qrSection">
             <h2>Players: Scan to Join!</h2>
@@ -308,21 +326,28 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Supabase credentials
+        const SUPABASE_URL = 'https://cysxqrnvlltndldjovam.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5c3hxcm52bGx0bmRsZGpvdmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODAxODIsImV4cCI6MjA4Njg1NjE4Mn0.TyNdxZeArM_sKOOrviLKskWCCSnizaM1_QxI0mBTE6k';
+
+        // Check if credentials are configured
+        if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+            console.error('⚠️ Please update the Supabase credentials in index-supabase.html');
+            document.getElementById('errorBanner').classList.add('show');
+        }
+
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let gameData = [];
         let currentQuestion = 0;
-        let votes = {};
         let revealed = false;
-        let ws;
+        let subscription = null;
 
-        // Get local IP for QR code
-        const protocol = window.location.protocol;
-        const hostname = window.location.hostname;
-        const port = window.location.port;
-        const baseUrl = `${protocol}//${hostname}:${port}`;
-        const voteUrl = `${baseUrl}/vote.html`;
-
-        // Generate QR code
+        // Get voting URL for QR code - fix the URL format
+        const voteUrl = window.location.origin + '/vote.html';
         document.getElementById('joinUrl').textContent = voteUrl;
         new QRCode(document.getElementById('qrCode'), {
             text: voteUrl,
@@ -330,41 +355,20 @@
             height: 200
         });
 
-        // WebSocket connection
-        function connectWebSocket() {
-            ws = new WebSocket(`ws://${hostname}:${port}/ws`);
-
-            ws.onopen = () => {
-                console.log('WebSocket connected');
-            };
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'vote') {
-                    handleVote(data.voter, data.vote);
-                } else if (data.type === 'votes') {
-                    votes = data.votes;
-                    updateVoteDisplay();
-                }
-            };
-
-            ws.onclose = () => {
-                console.log('WebSocket disconnected, reconnecting...');
-                setTimeout(connectWebSocket, 1000);
-            };
-        }
-
-        connectWebSocket();
-
         // Load game data
-        fetch('/api/game-data')
+        fetch('game_data.json')
             .then(r => r.json())
             .then(data => {
                 gameData = data;
                 loadQuestion();
+            })
+            .catch(err => {
+                console.error('Error loading game data:', err);
+                document.getElementById('promptText').textContent = 'Error loading questions';
+                document.getElementById('responseText').textContent = 'Please check console for details';
             });
 
-        function loadQuestion() {
+        async function loadQuestion() {
             if (currentQuestion >= gameData.length) {
                 currentQuestion = gameData.length - 1;
                 return;
@@ -386,26 +390,59 @@
             revealed = false;
             document.getElementById('answerReveal').classList.remove('show');
 
-            // Reset votes for new question
-            fetch('/api/reset-votes', { method: 'POST' });
+            // Subscribe to real-time votes for this question
+            subscribeToVotes();
+
+            // Load existing votes for this question
+            loadVotes();
         }
 
-        function handleVote(voter, vote) {
-            votes[voter] = vote;
-            updateVoteDisplay();
+        function subscribeToVotes() {
+            // Unsubscribe from previous question if exists
+            if (subscription) {
+                supabase.removeChannel(subscription);
+            }
+
+            // Subscribe to new votes for current question
+            subscription = supabase
+                .channel(`votes-${currentQuestion}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'votes',
+                    filter: `question_id=eq.${currentQuestion}`
+                }, (payload) => {
+                    console.log('Vote change detected:', payload);
+                    loadVotes();
+                })
+                .subscribe();
         }
 
-        function updateVoteDisplay() {
+        async function loadVotes() {
+            const { data, error } = await supabase
+                .from('votes')
+                .select('voter, vote')
+                .eq('question_id', currentQuestion);
+
+            if (error) {
+                console.error('Error loading votes:', error);
+                return;
+            }
+
+            updateVoteDisplay(data || []);
+        }
+
+        function updateVoteDisplay(votes) {
             const llmVoters = [];
             const slmVoters = [];
 
-            for (const [voter, vote] of Object.entries(votes)) {
-                if (vote === 'llm') {
-                    llmVoters.push(voter);
-                } else if (vote === 'slm') {
-                    slmVoters.push(voter);
+            votes.forEach(v => {
+                if (v.vote === 'llm') {
+                    llmVoters.push(v.voter);
+                } else if (v.vote === 'slm') {
+                    slmVoters.push(v.voter);
                 }
-            }
+            });
 
             document.getElementById('llmVotes').textContent = llmVoters.length;
             document.getElementById('slmVotes').textContent = slmVoters.length;
@@ -413,13 +450,20 @@
             document.getElementById('slmVoters').textContent = slmVoters.join(', ');
         }
 
-        function revealAnswer() {
+        async function revealAnswer() {
             if (revealed) return;
 
             const q = gameData[currentQuestion];
             const correct = q.showing;
-            const correctCount = Object.values(votes).filter(v => v === correct).length;
-            const incorrectCount = Object.values(votes).length - correctCount;
+
+            // Get current votes
+            const { data: votes } = await supabase
+                .from('votes')
+                .select('vote')
+                .eq('question_id', currentQuestion);
+
+            const correctCount = votes ? votes.filter(v => v.vote === correct).length : 0;
+            const incorrectCount = votes ? votes.length - correctCount : 0;
 
             document.getElementById('answerText').textContent =
                 `✨ This was ${correct.toUpperCase()}! ✨`;
@@ -444,8 +488,17 @@
             }
         }
 
-        function resetVotes() {
-            fetch('/api/reset-votes', { method: 'POST' });
+        async function resetVotes() {
+            const { error } = await supabase
+                .from('votes')
+                .delete()
+                .eq('question_id', currentQuestion);
+
+            if (error) {
+                console.error('Error resetting votes:', error);
+            } else {
+                console.log('Votes reset for question', currentQuestion);
+            }
         }
     </script>
 </body>
