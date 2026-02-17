@@ -149,6 +149,24 @@
             document.getElementById('voterName').value = voterName;
         }
 
+        // Listen for question changes by checking if our vote still exists
+        setInterval(async () => {
+            if (!voterName) return;
+
+            const { data } = await db
+                .from('votes')
+                .select('vote')
+                .eq('voter', voterName)
+                .eq('question_id', currentQuestionId);
+
+            // If our vote is gone, the host moved to next question
+            if (!data || data.length === 0) {
+                document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+                const status = document.getElementById('status');
+                status.className = 'status';
+            }
+        }, 3000);
+
         async function vote(choice) {
             const nameInput = document.getElementById('voterName');
             const name = nameInput.value.trim();
