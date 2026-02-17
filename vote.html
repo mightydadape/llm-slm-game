@@ -192,10 +192,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // Initialize Supabase
+        // Initialize Supabase client
         const SUPABASE_URL = "https://cysxqrnvlltndldjovam.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5c3hxcm52bGx0bmRsZGpvdmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODAxODIsImV4cCI6MjA4Njg1NjE4Mn0.TyNdxZeArM_sKOOrviLKskWCCSnizaM1_QxI0mBTE6k";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let voterName = localStorage.getItem('voterName') || '';
         let currentQuestionId = 0;

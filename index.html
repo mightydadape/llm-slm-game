@@ -338,8 +338,9 @@
             document.getElementById('errorBanner').classList.add('show');
         }
 
-        // Initialize Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase client
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let gameData = [];
         let currentQuestion = 0;
