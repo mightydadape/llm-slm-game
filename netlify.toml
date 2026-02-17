@@ -1,18 +1,19 @@
 [build]
   publish = "."
 
+# Specific redirects MUST come before catch-all
 [[redirects]]
-  from = "/*"
-  to = "/index-supabase.html"
+  from = "/vote.html"
+  to = "/vote-supabase.html"
   status = 200
-  force = false
 
 [[redirects]]
   from = "/vote"
   to = "/vote-supabase.html"
   status = 200
 
+# Catch-all redirect for root - only if not found
 [[redirects]]
-  from = "/vote.html"
-  to = "/vote-supabase.html"
+  from = "/"
+  to = "/index-supabase.html"
   status = 200
