@@ -223,6 +223,7 @@
         let currentQuestion = 0;
         let revealed = false;
         let subscription = null;
+        let pollInterval = null;
 
         const voteUrl = window.location.origin + '/vote.html';
         document.getElementById('joinUrl').textContent = voteUrl;
@@ -256,6 +257,10 @@
 
             subscribeToVotes();
             loadVotes();
+
+            // Fallback: poll every 2 seconds if realtime isn't working
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(loadVotes, 2000);
         }
 
         function subscribeToVotes() {
@@ -270,8 +275,13 @@
                     schema: 'public',
                     table: 'votes',
                     filter: `question_id=eq.${currentQuestion}`
-                }, () => loadVotes())
-                .subscribe();
+                }, (payload) => {
+                    console.log('Vote change detected:', payload);
+                    loadVotes();
+                })
+                .subscribe((status) => {
+                    console.log('Subscription status:', status);
+                });
         }
 
         async function loadVotes() {
